@@ -339,25 +339,31 @@
     };
 
     GaugePointer.prototype.render = function() {
-      var angle, centerX, centerY, endX, endY, startX, startY, x, y;
-      angle = this.gauge.getAngle.call(this, this.displayedValue);
-      centerX = this.canvas.width / 2;
-      centerY = this.canvas.height * 0.9;
-      x = Math.round(centerX + this.length * Math.cos(angle));
-      y = Math.round(centerY + this.length * Math.sin(angle));
-      startX = Math.round(centerX + this.strokeWidth * Math.cos(angle - Math.PI / 2));
-      startY = Math.round(centerY + this.strokeWidth * Math.sin(angle - Math.PI / 2));
-      endX = Math.round(centerX + this.strokeWidth * Math.cos(angle + Math.PI / 2));
-      endY = Math.round(centerY + this.strokeWidth * Math.sin(angle + Math.PI / 2));
-      this.ctx.fillStyle = this.options.color;
-      this.ctx.beginPath();
-      this.ctx.arc(centerX, centerY, this.strokeWidth, 0, Math.PI * 2, true);
-      this.ctx.fill();
-      this.ctx.beginPath();
-      this.ctx.moveTo(startX, startY);
-      this.ctx.lineTo(x, y);
-      this.ctx.lineTo(endX, endY);
-      return this.ctx.fill();
+        var angle, centerX, centerY, endX, endY, startX, startY, x, y;
+        // edited lines by okierie ref1
+        if (this.value > this.maxValue){
+            angle = this.gauge.getAngle.call(this, this.maxValue);
+        }
+        else{
+            angle = this.gauge.getAngle.call(this, this.displayedValue);
+        }
+        centerX = this.canvas.width / 2;
+        centerY = this.canvas.height * 0.9;
+        x = Math.round(centerX + this.length * Math.cos(angle));
+        y = Math.round(centerY + this.length * Math.sin(angle));
+        startX = Math.round(centerX + this.strokeWidth * Math.cos(angle - Math.PI / 2));
+        startY = Math.round(centerY + this.strokeWidth * Math.sin(angle - Math.PI / 2));
+        endX = Math.round(centerX + this.strokeWidth * Math.cos(angle + Math.PI / 2));
+        endY = Math.round(centerY + this.strokeWidth * Math.sin(angle + Math.PI / 2));
+        this.ctx.fillStyle = this.options.color;
+        this.ctx.beginPath();
+        this.ctx.arc(centerX, centerY, this.strokeWidth, 0, Math.PI * 2, true);
+        this.ctx.fill();
+        this.ctx.beginPath();
+        this.ctx.moveTo(startX, startY);
+        this.ctx.lineTo(x, y);
+        this.ctx.lineTo(endX, endY);
+        return this.ctx.fill();
     };
 
     return GaugePointer;
@@ -505,7 +511,9 @@
       for (k = 0, len = value.length; k < len; k++) {
         val = value[k];
         if (val > this.maxValue) {
-          this.maxValue = this.value * 1.1;
+            // edited line  ref3
+//          original : this.maxValue = this.value * 1.1;
+//          removed
           max_hit = true;
         }
         this.gp[i].value = val;
@@ -565,7 +573,13 @@
       var displayedAngle, fillStyle, gauge, h, j, len, ref, results, w;
       w = this.canvas.width / 2;
       h = this.canvas.height * (1 - this.paddingBottom);
-      displayedAngle = this.getAngle(this.displayedValue);
+      //edited lines by okierie ref2
+      if (this.value > this.maxValue){
+          displayedAngle = this.getAngle(this.maxValue);
+      }
+      else{
+          displayedAngle = this.getAngle(this.displayedValue);
+      }      
       if (this.textField) {
         this.textField.render(this);
       }
@@ -784,3 +798,8 @@
   }
 
 }).call(this);
+// ref1 => prevent the pointer from pointing over the gauge
+// 		if the value is over max value then the angle of the pointer based on max value
+// 		if the value is not over max value then the angle of the pointer based on displayedValue
+// ref2 => prevent the background from filling over the gauge
+// ref3 => prevent max value from being upgraded
